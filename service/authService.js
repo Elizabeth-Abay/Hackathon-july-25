@@ -6,7 +6,7 @@ const shaHasher = require('../utils/shaHasher');
 const EmailSendingFunctions = require('./emailSending');
 const doesOtpMatch = require('../utils/OtpMatched');
 const { RefreshToken, AccessToken } = require('./tokenGeneration');
-const BcryptRelated = require('../utils/bcryptRelated');
+const BcryptHelper = require('../utils/bcryptHelper');
 
 
 const authModelPg = new AuthModelPg();
@@ -16,7 +16,7 @@ const refreshService = new RefreshToken();
 const accessService = new AccessToken();
 
 class AuthService {
-    async createUser(email) {
+    async signUp({ name , email , role , password }) {
         try {
             // check if user exist send them email 
             let isUniqueResult = await authModelPg.checkUserExist(email);
@@ -33,12 +33,15 @@ class AuthService {
             let OTP = generateOTP();
             let otpHashed = shaHasher(OTP);
 
+            // hash the password
+            let hashedPassword = await BcryptHelper.bcryptHasher(password)
+
             // sending email
             let res = await EmailSendingFunctions.sendingOTPEmail({ email, OTP });
             //console.log(`OTP is ${OTP} and the user email sent is ${res}`)
 
             // creating the user node and the user in pg
-            let userInPg = await authModelPg.createUser({ email, otpHashed });
+            let userInPg = await authModelPg.signUp({ name , email , role , hashedPassword , otpHashed });
             // //console.log("userinPg" , userInPg);
 
 
@@ -65,52 +68,22 @@ class AuthService {
         try {
             // get Otp and hash and compare it
             // hash otp
-            let OtpHashed = shaHasher(OTP);
+            let otpHashed = shaHasher(OTP);
 
-
-            // get the otp from db
-            let result = await authModelPg.getOtp(id);
-
-            //console.log("Result from verifyUser is " , result);
-
-            if (!result.success) return result;
-
-            let { otp_hashed } = result.data;
-
-            //console.log("db ", otp_hashed, "hashed ", OtpHashed);
-
-            let otpMatched = doesOtpMatch(otp_hashed, OtpHashed);
-
-            if (!otpMatched) {
-                return {
-                    success: false,
-                    reason: "Otps dont match"
-                }
-            }
-            // update status of user to verified
-            let gotVerified = await authModelPg.setUserAsVerified(id);
+            // update status of user to verified and check the otp matches
+            let gotVerified = await authModelPg.setUserAsVerified({id , otpHashed });
 
             if (!gotVerified.success) {
                 return {
                     success: false,
-                    reason: "Couldnt update user status"
+                    reason: "Couldnt update user status maybe otp mismatch"
                 }
             }
 
-            // create graph and mongodb instances once verified
-            let userInGraph = await authModelGraph.createGraphNode(id);
-
-            if (!userInGraph.success) return userInGraph;
-
-
-            let userInMong = await authModelMong.createUser(id);
-
-            if (!userInMong) return userInMong;
-
-
             // else create tokens
+            let {id , role } = gotVerified.data;
 
-            let accessToken = accessService.generateAccess(id);
+            let accessToken = accessService.generateAccess({id , role });
             let refreshToken = await refreshService.generateRefresh(id);
             // //console.log("ref " , refreshToken);
 
@@ -148,19 +121,14 @@ class AuthService {
 
     async resendOtp(id) {
         try {
-
-            let userInfo = await authModelPg.getUserEmail(id);
-
-            if (!userInfo.success) return userInfo;
-
-            let { email } = userInfo.data;
-
             // else generate and hash otp and email it
             let OTP = generateOTP();
             let otpHashed = shaHasher(OTP);
 
             // updating the OTP in the table
-            let updatingOtp = await authModelPg.resendOtp({ email, otpHashed });
+            let updatingOtp = await authModelPg.resendOtp({ id, otpHashed });
+
+            let { email } = updatingOtp.data
 
             if (!updatingOtp.success) return updatingOtp;
 
@@ -191,9 +159,9 @@ class AuthService {
             // then cr8 access and ref tokens
             // fetch some posts and some new connections
 
-            let { id, password_hashed } = result.data;
+            let { id, password_hashed , role } = result.data;
 
-            let passwordsMatched = await BcryptRelated.bcryptCompare(password, password_hashed);
+            let passwordsMatched = await BcryptHelper.bcryptCompare(password, password_hashed);
 
             if (!passwordsMatched) return {
                 success: false,
@@ -201,7 +169,7 @@ class AuthService {
             }
 
 
-            let accessToken = accessService.generateAccess(id);
+            let accessToken = accessService.generateAccess({id , role});
             let refreshToken = await refreshService.generateRefresh(id);
             // //console.log("ref " , refreshToken);
 
@@ -237,6 +205,8 @@ class AuthService {
         }
     }
 
+
+    // not done yet
     async logOut(randomString) {
         try {
             // log-out means to invalidate all refresh tokens

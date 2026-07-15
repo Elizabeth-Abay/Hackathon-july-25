@@ -30,11 +30,11 @@ class AuthModelPg {
 
 
     // we use the otp + expiration when u resend code
-    async createUser({ email, otpHashed }) {
+    async signUp({ name , email , role , hashedPassword , otpHashed  }) {
         try {
             // if user exists and is not verified then update that
             let query = `
-                INSERT INTO users(email , otp_hashed ,  otp_expires_at)  VALUES($1,$2 , CURRENT_TIMESTAMP + INTERVAL '5 minutes')
+                INSERT INTO users(name ,email , role , password , otp_hashed)  VALUES($1,$2 ,$3 , $4 , $5)
                 ON CONFLICT(email)
                 DO UPDATE SET otp_hashed = $2,
                 updated_at = NOW()
@@ -42,7 +42,7 @@ class AuthModelPg {
                 ;
             `
 
-            let values = [email, otpHashed];
+            let values = [name , email , role , hashedPassword , otpHashed ];
 
             let result = await pool.query(
                 query, values
@@ -56,7 +56,7 @@ class AuthModelPg {
             // the lower layers will throw error and the upper layer will be the one to catch that
             if (typeof err === 'object' && !err.from) {
                 // this is so that if lower layer's message won't be masked
-                err.from = 'AuthModelPg.createUser';
+                err.from = 'AuthModelPg.signUp';
             }
             throw err;
         }
@@ -100,10 +100,10 @@ class AuthModelPg {
     }
 
 
-    async setUserAsVerified(userId) {
+    async setUserAsVerified({id , otpHashed }) {
         try {
-            let query = `UPDATE users SET status = 'verified' WHERE id = $1 RETURNING id`;
-            let values = [userId];
+            let query = `UPDATE users SET status = 'verified' , otp_used = true WHERE id = $1 AND otp_hashed = $2 RETURNING id,role`;
+            let values = [id , otpHashed ];
 
             let result = await pool.query(query, values);
 
@@ -112,7 +112,8 @@ class AuthModelPg {
                     success: false
                 } :
                 {
-                    success: true
+                    success: true,
+                    data : result.rows[0]
                 }
 
         } catch (err) {
@@ -153,17 +154,17 @@ class AuthModelPg {
     }
 
 
-    async resendOtp({ email, otpHashed }) {
+    async resendOtp({ id, otpHashed }) {
         try {
             let query = `
                 UPDATE users 
-                SET otp_hashed = $1,
-                otp_expires_at=CURRENT_TIMESTAMP + INTERVAL '5 minutes'
-                WHERE email = $2
-                RETURNING id
+                SET otp_hashed = $2,
+                otp_expires_at=CURRENT_TIMESTAMP + INTERVAL '15 minutes'
+                WHERE id = $1
+                RETURNING email
             `
 
-            let values = [otpHashed, email];
+            let values = [id, otpHashed ];
 
             let result = await pool.query(
                 query, values
@@ -171,7 +172,7 @@ class AuthModelPg {
 
             return {
                 success: true,
-                data: result.rows
+                data: result.rows[0]
             }
 
         } catch (err) {
@@ -185,6 +186,7 @@ class AuthModelPg {
     }
 
 
+    // for forgot password implementation
     async putInPassword({ id, passwordHashed }) {
         try {
             let query = `
@@ -214,7 +216,7 @@ class AuthModelPg {
     async logIn(email) {
         try {
             let query = `
-                SELECT id , password_hashed  
+                SELECT id , password_hashed, role
                 FROM users 
                 WHERE email = $1
                 AND status = 'verified'

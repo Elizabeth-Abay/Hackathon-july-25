@@ -2,17 +2,22 @@ const AuthService = require('../service/authService');
 
 const authService = new AuthService();
 
+
+
+// remaining tasks - log out - on service , here and schema validator lay input
+// refresh token part work on
+// next demo start the searching logics
 class AuthController {
     constructor() { }
 
-    async createUser(req, res, next) {
+    async signUp(req, res, next) {
         // to be able to call the global error handler in case of error
         try {
             //console.log("Request received");
             // validator already called in the routes
-            let { email } = req.body;
+            let { name , email , role , password } = req.body;
 
-            let result = await authService.createUser(email);
+            let result = await authService.signUp({ name , email , role , password });
 
             return result.success ?
                 res.status(201).json({ id: result.data })
@@ -24,7 +29,7 @@ class AuthController {
             // the lower layers will throw error and the upper layer will be the one to catch that
             if (typeof err === 'object' && !err.from) {
                 // this is so that if lower layer's message won't be masked
-                err.from = "AuthControllers.createUser";
+                err.from = "AuthControllers.signUp";
             }
 
             next(err); // this will call the error handler

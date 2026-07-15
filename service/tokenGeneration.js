@@ -9,7 +9,7 @@ const refreshTokenModel = require('../model/refreshToken.js');
 const shaHasher = require('../utils/shaHasher');
 
 
-let { ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } = process.env;
+let { access_token_secret , refresh_token_secret } = process.env;
 
 dotenv.config({
     path: path.resolve(__dirname, '../../.env')
@@ -19,7 +19,7 @@ dotenv.config({
 const refreshModel = new refreshTokenModel();
 
 class AccessToken {
-    generateAccess(id) {
+    generateAccess({id , role }) {
 
         let expirationTime = 3600; // 1hr in seconds
 
@@ -30,9 +30,10 @@ class AccessToken {
         let accessToken = jwt.sign(
             {
                 exp: currently + expirationTime,
-                id
+                id,
+                role
             },
-            ACCESS_TOKEN_SECRET);
+            access_token_secret );
 
         return {
             success: true,
@@ -67,7 +68,7 @@ class RefreshToken {
 
 
             // contents of the refresh token
-            let refreshToken = jwt.sign({ exp, randomString }, REFRESH_TOKEN_SECRET)
+            let refreshToken = jwt.sign({ exp, randomString }, refresh_token_secret)
             // //console.log("refreshToken" , refreshToken);
 
             // then return this as a data
