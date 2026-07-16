@@ -25,6 +25,5 @@ const emailTransporter = nodeMailer.createTransport({
 })
 
 
-console.log(emailTransporter);
 
 module.exports = emailTransporter

@@ -1,6 +1,4 @@
 const AuthModelPg = require('../model/AuthModel');
-const AuthModelGraph = require('../model/AuthModelG');
-const AuthModelMong = require('../model/AuthModelMong');
 const generateOTP = require('../utils/otpGenerator');
 const shaHasher = require('../utils/shaHasher');
 const EmailSendingFunctions = require('./emailSending');
@@ -10,8 +8,6 @@ const BcryptHelper = require('../utils/bcryptHelper');
 
 
 const authModelPg = new AuthModelPg();
-const authModelGraph = new AuthModelGraph();
-const authModelMong = new AuthModelMong();
 const refreshService = new RefreshToken();
 const accessService = new AccessToken();
 

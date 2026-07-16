@@ -4,7 +4,7 @@ const Joi = require('joi');
 class AuthSchemas {
     static signUp = Joi.object({
         name: Joi.string().required(),
-        email: Joi.email().required(),
+        email: Joi.string().email().required(),
         password: Joi.string().required().min(6),
         role: Joi.string().required().valid('agent', 'user'),
     })

@@ -1,6 +1,6 @@
 const express = require('express');
 const AuthSchemas = require('../schemas/authSchema');
-const validate = require('../middleware/joiValidator');
+const validate = require('../middleware/schemaValidator');
 const AuthController = require('../controller/authController');
 const TokenDecoder = require('../middleware/tokenDecoder');
 

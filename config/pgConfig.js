@@ -9,22 +9,21 @@ dotenv.config({
 // since the .env is outside this folder 
 
 
-let { 
+let {
     data_base_user = booking_trips_app_client,
     data_base_host,
     data_base_user_password,
-    data_base 
-    } = process.env;
+    data_base
+} = process.env;
 
 let pool = new pg.Pool({
-    host : data_base_host,
-    user : data_base_user,
-    password : data_base_user_password,
-    database : data_base
+    host: data_base_host,
+    user: data_base_user,
+    password: data_base_user_password,
+    database: data_base
 })
 
 
-console.log(pool)
 
 
 module.exports = pool
