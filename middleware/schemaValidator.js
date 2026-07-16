@@ -1,6 +1,8 @@
-const Validator = require('../utils/validatorCreator');
+const Validator = require('../utils/schemaValidator');
 
-const validate = (schema) => {
+function validate(schema) {
+    // in the phase where the server starts the middleware 
+    // will be returned and stored from this function 
     return (req, res, next) => {
         try {
             const { data } = Validator.validatorCreator(schema, req.body);

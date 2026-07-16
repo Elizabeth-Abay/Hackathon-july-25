@@ -128,9 +128,9 @@ class AuthService {
             // updating the OTP in the table
             let updatingOtp = await authModelPg.resendOtp({ id, otpHashed });
 
-            let { email } = updatingOtp.data
-
             if (!updatingOtp.success) return updatingOtp;
+
+            let { email } = updatingOtp.data
 
             // sending email
             await EmailSendingFunctions.sendingOTPEmail({ email, OTP });
@@ -209,13 +209,12 @@ class AuthService {
     // not done yet
     async logOut(randomString) {
         try {
-            // log-out means to invalidate all refresh tokens
+            // log-out means to invalidate that refresh tokens
             let hashedRandomString = shaHasher(randomString);
 
             let invalidateRefreshToken = await refreshService.invalidateForLogOut(hashedRandomString);
 
             return invalidateRefreshToken;
-
 
         } catch (err) {
             // the lower layers will throw error and the upper layer will be the one to catch that

@@ -68,6 +68,9 @@ class AuthController {
 
     async resendOtp(req, res, next) {
         try {
+            // params - for path parameter
+            // query - for query parameter access
+            // but resend shld be post request
             let { id } = req.body;
             let result = await authService.resendOtp(id);
 
@@ -118,6 +121,7 @@ class AuthController {
 
     async logOut(req, res, next) {
         try {
+            // when ppl log out they send in refresh token
             let { randomString } = req.decodedRefresh;
 
             let result = await authService.logOut(randomString);
@@ -127,7 +131,6 @@ class AuthController {
                 res.status(200).json(result)
                 :
                 res.status(400).json(result);
-
 
 
         } catch (err) {

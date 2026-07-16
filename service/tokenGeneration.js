@@ -5,7 +5,7 @@ const path = require('path');
 
 
 const stringGenerator = require('../utils/stringGenerator')
-const refreshTokenModel = require('../model/refreshToken.js');
+const refreshTokenModel = require('../model/refreshModel');
 const shaHasher = require('../utils/shaHasher');
 
 
