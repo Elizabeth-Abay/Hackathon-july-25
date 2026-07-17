@@ -102,7 +102,18 @@ class AuthModelPg {
 
     async setUserAsVerified({id , otpHashed }) {
         try {
-            let query = `UPDATE users SET status = 'verified' , otp_used = true WHERE id = $1 AND otp_hashed = $2 RETURNING id,role`;
+            console.log("Id , otpHashed from model")
+            console.log({id , otpHashed })
+            let query = `
+                UPDATE users 
+                SET status = 'verified' , 
+                otp_used = true
+                WHERE id = $1 
+                AND 
+                otp_hashed = $2 
+                AND 
+                otp_expires_at > now()
+                RETURNING role`;
             let values = [id , otpHashed ];
 
             let result = await pool.query(query, values);
@@ -216,7 +227,7 @@ class AuthModelPg {
     async logIn(email) {
         try {
             let query = `
-                SELECT id , password_hashed, role
+                SELECT id , password, role
                 FROM users 
                 WHERE email = $1
                 AND status = 'verified'

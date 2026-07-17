@@ -13,11 +13,11 @@ class AuthController {
     async signUp(req, res, next) {
         // to be able to call the global error handler in case of error
         try {
-            //console.log("Request received");
+            console.log("Request received");
             // validator already called in the routes
-            let { name , email , role , password } = req.body;
+            let { name, email, role, password } = req.body;
 
-            let result = await authService.signUp({ name , email , role , password });
+            let result = await authService.signUp({ name, email, role, password });
 
             return result.success ?
                 res.status(201).json({ id: result.data })
@@ -39,14 +39,15 @@ class AuthController {
 
     async verifyUserOtp(req, res, next) {
         try {
-            
             let { id, OTP } = req.body;
 
             //console.log("Verifying otp" , { id, OTP })
 
-            
+
 
             let result = await authService.verifyUser({ id, OTP })
+
+            if (!result.success) console.log(result)
 
             return result.success ?
                 res.status(200).json(result.data)
@@ -123,6 +124,8 @@ class AuthController {
         try {
             // when ppl log out they send in refresh token
             let { randomString } = req.decodedRefresh;
+            console.log("random String")
+            console.log(randomString)
 
             let result = await authService.logOut(randomString);
 

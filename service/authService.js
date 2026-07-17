@@ -5,6 +5,7 @@ const EmailSendingFunctions = require('./emailSending');
 const doesOtpMatch = require('../utils/OtpMatched');
 const { RefreshToken, AccessToken } = require('./tokenGeneration');
 const BcryptHelper = require('../utils/bcryptHelper');
+const { use } = require('../config/emailTransporter');
 
 
 const authModelPg = new AuthModelPg();
@@ -64,7 +65,13 @@ class AuthService {
         try {
             // get Otp and hash and compare it
             // hash otp
+
+            console.log(id)
+            console.log(OTP)
             let otpHashed = shaHasher(OTP);
+
+            console.log("id , otp in service")
+            console.log({ id, OTP })
 
             // update status of user to verified and check the otp matches
             let gotVerified = await authModelPg.setUserAsVerified({id , otpHashed });
@@ -77,7 +84,9 @@ class AuthService {
             }
 
             // else create tokens
-            let {id , role } = gotVerified.data;
+            console.log("gotVerified Result")
+            console.log(gotVerified)
+            let { role } = gotVerified.data;
 
             let accessToken = accessService.generateAccess({id , role });
             let refreshToken = await refreshService.generateRefresh(id);
@@ -155,9 +164,10 @@ class AuthService {
             // then cr8 access and ref tokens
             // fetch some posts and some new connections
 
-            let { id, password_hashed , role } = result.data;
+            let { id, password : hashedPassword , role } = result.data;
+            
 
-            let passwordsMatched = await BcryptHelper.bcryptCompare(password, password_hashed);
+            let passwordsMatched = await BcryptHelper.bcryptCompare(password, hashedPassword);
 
             if (!passwordsMatched) return {
                 success: false,

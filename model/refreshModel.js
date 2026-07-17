@@ -3,7 +3,7 @@ const pool = require('../config/pgConfig');
 class RefreshToken {
     async createRef({ userId, hashedRandomString }) {
         try {
-            let query = 'INSERT INTO refresh_token(user_id , token_hash) VALUES ($1 , $2) RETURNING id'
+            let query = 'INSERT INTO refresh_tokens(user_id , token_hash) VALUES ($1 , $2) RETURNING id'
             let values = [userId, hashedRandomString];
 
             let result = await pool.query(query, values);
@@ -30,7 +30,7 @@ class RefreshToken {
         try {
             let query = `
                 SELECT user_id , id , is_revoked
-                FROM refresh_token WHERE 
+                FROM refresh_tokens WHERE 
                 is_revoked IS FALSE 
                 AND token_hash = $1
                 AND expires_at > NOW()
@@ -62,7 +62,7 @@ class RefreshToken {
         try {
             // this will accept the new tokens id and put it into a chain in the refresh token  
             let query = `
-                UPDATE refresh_token 
+                UPDATE refresh_tokens 
                 SET replaced_by = $2,
                 is_revoked = TRUE 
                 WHERE id = $1 
@@ -92,7 +92,7 @@ class RefreshToken {
     async invalidateAll(userId) {
         try {
             let query = `
-                UPDATE refresh_token 
+                UPDATE refresh_tokens 
                 SET is_revoked = TRUE 
                 where user_id = $1;
                 `;
@@ -117,15 +117,22 @@ class RefreshToken {
 
     static async invalidateForLogOut(hashedRandom) {
         try {
+            console.log("randomString")
+            console.log(hashedRandom)
+
+            
             let query = `
-                UPDATE refresh_token
+                UPDATE refresh_tokens
                 SET is_revoked = true
                 WHERE token_hash = $1
+                RETURNING id
             `;
 
             let values = [hashedRandom];
 
             let result = await pool.query(query, values);
+
+            console.log(result)
 
             return (result.rowCount === 0)
                 ?

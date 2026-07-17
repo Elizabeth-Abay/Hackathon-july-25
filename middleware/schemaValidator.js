@@ -6,6 +6,8 @@ function validate(schema) {
     return (req, res, next) => {
         try {
             const { data } = Validator.validatorCreator(schema, req.body);
+            // console.log("data from validation")
+            // console.log(data)
             
             // Override req.body with the sanitized/validated Joi value
             req.body = data; 

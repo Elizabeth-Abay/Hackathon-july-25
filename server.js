@@ -10,8 +10,14 @@ const { PORT } = process.env
 
 const server = express();
 
+server.use(express.json())
+
 server.use('/auth', authRouter)
 server.use(globalErrorHandler)
+
+server.get('/', (req , res) => {
+    res.json('request received')
+})
 
 
 server.listen(

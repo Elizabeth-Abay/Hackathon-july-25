@@ -54,19 +54,23 @@ class RefreshToken {
             // sentInfo = { randomString , userId}
 
             let randomString = stringGenerator();
+            console.log("random string for log in")
+            console.log(randomString)
 
             let twenty_days_from_now = 20 * 24 * 60 * 60;
             let exp = Date.now() / 1000 + twenty_days_from_now;
 
 
             let hashedRandomString = shaHasher(randomString);
+            console.log("hashed random string for log in")
+            console.log(hashedRandomString)
 
             // sent to the database
             let refToken = await refreshModel.createRef({ userId, hashedRandomString });
 
             if (!refToken.success) return refToken
 
-
+            
             // contents of the refresh token
             let refreshToken = jwt.sign({ exp, randomString }, refresh_token_secret)
             // //console.log("refreshToken" , refreshToken);
@@ -135,9 +139,18 @@ class RefreshToken {
 
     async invalidateForLogOut(randomString) {
         try {
-            let hashedRandom = shaHasher(randomString);
+            console.log("Logging out")
+            console.log(randomString)
+            // let hashedRandom = shaHasher(randomString);
+            // console.log("hashed for log out")
+            // console.log(hashedRandom)
 
-            let result = await  refreshTokenModel.invalidateForLogOut(hashedRandom)
+            let result = await  refreshTokenModel.invalidateForLogOut(randomString)
+
+            console.log("result from invalidating for logout")
+            console.log(result)
+
+            return result;
         } catch (err) {
             if (typeof err === 'object' && !err.from) {
                 err.from = 'RefreshToken.revokeToken';
