@@ -5,11 +5,9 @@ const tripService = new TripService()
 class TripController {
     async getAll(req, res, next) {
         try {
-            // let { id , role } = req.decodedAccess || null;
-            let role ; // deleted
+            let { id , role } = req.decodedAccess;
             if (role == null) role = 'user'
-            // id ,
-            let result = await tripService.getAll({  role })
+            let result = await tripService.getAll({ id , role })
 
             return result.success ?
                 res.status(200).json(result)

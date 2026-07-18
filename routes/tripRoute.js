@@ -10,9 +10,8 @@ const tripController = new TripController()
 const validatorObj = new Validator()
 
 
-// ,TokenDecoder.accessDecode 
-tripRouter.get('/' , tripController.getAll);
-tripRouter.get('/filter' , validatorObj.queryParamValidator(TripSchema.filterByInitial) ,tripController.filterByInitial);
+tripRouter.get('/' ,TokenDecoder.accessDecode, tripController.getAll);
+tripRouter.get('/filter' , TokenDecoder.accessDecode , validatorObj.queryParamValidator(TripSchema.filterByInitial) ,tripController.filterByInitial);
 
 
 module.exports = tripRouter
