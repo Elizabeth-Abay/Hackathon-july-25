@@ -15,7 +15,7 @@ class AuthController {
         try {
             console.log("Request received");
             // validator already called in the routes
-            let { name, email, role, password } = req.body;
+            let { name, email, role, password } = req.validatedBody;
 
             let result = await authService.signUp({ name, email, role, password });
 
@@ -39,7 +39,7 @@ class AuthController {
 
     async verifyUserOtp(req, res, next) {
         try {
-            let { id, OTP } = req.body;
+            let { id, OTP } = req.validatedBody;
 
             //console.log("Verifying otp" , { id, OTP })
 
@@ -72,7 +72,7 @@ class AuthController {
             // params - for path parameter
             // query - for query parameter access
             // but resend shld be post request
-            let { id } = req.body;
+            let { id } = req.validatedBody;
             let result = await authService.resendOtp(id);
 
             return (result.success) ?
@@ -98,7 +98,7 @@ class AuthController {
         try {
             //console.log("Log in called");
             // email and password
-            let { email, password } = req.body;
+            let { email, password } = req.validatedBody;
 
             let result = await authService.logIn({ email, password });
 
