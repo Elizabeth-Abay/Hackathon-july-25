@@ -1,6 +1,6 @@
 const TripModel = require('../model/tripModel')
 
-const tripModel = TripModel()
+const tripModel = new TripModel()
 
 class TripService {
     async getAll({ role, id }) {

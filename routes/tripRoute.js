@@ -6,8 +6,8 @@ const TripSchema = require('../schemas/tripSchema')
 
 
 const tripRouter = express.Router()
-const tripController = TripController()
-const validatorObj = Validator()
+const tripController = new TripController()
+const validatorObj = new Validator()
 
 
 // ,TokenDecoder.accessDecode 

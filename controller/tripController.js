@@ -1,14 +1,15 @@
 const TripService = require('../service/tripService');
 
-const tripService = TripService()
+const tripService = new TripService()
 
 class TripController {
     async getAll(req, res, next) {
         try {
-            let { id , role } = req.decodedAccess;
+            // let { id , role } = req.decodedAccess || null;
+            let role ; // deleted
             if (role == null) role = 'user'
-
-            let result = await tripService.getAll({ id , role })
+            // id ,
+            let result = await tripService.getAll({  role })
 
             return result.success ?
                 res.status(200).json(result)
@@ -70,4 +71,4 @@ class TripController {
     // }
 }
 
-module.exports = TripFilterController
+module.exports = TripController

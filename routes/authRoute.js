@@ -7,7 +7,7 @@ const TokenDecoder = require('../middleware/tokenDecoder');
 
 const authRouter = express.Router();
 const authController = new AuthController();
-const validatorObj = ValidatorMW()
+const validatorObj = new ValidatorMW()
 
 
 // to create a user - by receiving the email only -- works

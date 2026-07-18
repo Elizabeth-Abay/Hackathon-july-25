@@ -68,7 +68,7 @@ class TripModel {
     }
 
 
-    async filterInitial(initialPlace) {
+    async filterByInitial(initialPlace) {
         try {
             let query = `
             SELECT id ,destination , price
